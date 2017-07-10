@@ -1,0 +1,9 @@
+grammar org.evidently.Evidently with org.eclipse.xtext.common.Terminals
+
+generate evidently "http://www.evidently.org/Evidently"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' name=ID '!';

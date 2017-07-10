@@ -1,0 +1,93 @@
+<idea-plugin version="2">
+	<extensions defaultExtensionNs="org.eclipse.xtext.idea">
+		<package
+			uri="http://www.evidently.org/Evidently"
+			class="org.evidently.evidently.EvidentlyPackage"
+		/>
+		<resourceFactory 
+			type="evidently"
+			class="org.eclipse.xtext.resource.IResourceFactory"
+			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
+		/>
+		<resourceServiceProvider
+			uriExtension="evidently"
+			class="org.eclipse.xtext.idea.resource.IResourceIdeaServiceProvider"
+			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
+		/>
+
+		<lang.setup
+			language="org.evidently.Evidently"
+			implementationClass="org.evidently.idea.EvidentlyIdeaSetup"
+		/>
+	</extensions>
+
+	<extensions defaultExtensionNs="com.intellij">
+		<psi.treeChangePreprocessor implementation="org.evidently.idea.lang.psi.EvidentlyCodeBlockModificationListener"/>
+
+		<fileTypeFactory implementation="org.evidently.idea.lang.EvidentlyFileTypeFactory"/>
+		<stubElementTypeHolder class="org.evidently.idea.lang.EvidentlyElementTypeProvider"/>
+		<lang.ast.factory 
+			language="org.evidently.Evidently"
+			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
+			implementationClass="org.eclipse.xtext.idea.lang.BaseXtextASTFactory"
+		/>
+		<lang.parserDefinition 
+			language="org.evidently.Evidently"
+			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
+			implementationClass="org.evidently.idea.lang.parser.EvidentlyParserDefinition"
+		/>
+		<lang.findUsagesProvider 
+			language="org.evidently.Evidently"
+			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
+			implementationClass="org.eclipse.xtext.idea.findusages.BaseXtextFindUsageProvider"
+		/>
+		<lang.refactoringSupport 
+			language="org.evidently.Evidently"
+			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
+			implementationClass="org.eclipse.xtext.idea.refactoring.BaseXtextRefactoringSupportProvider"
+		/>
+		<lang.namesValidator 
+			language="org.evidently.Evidently"
+			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
+			implementationClass="com.intellij.lang.refactoring.NamesValidator"
+		/>
+		<lang.syntaxHighlighterFactory key="org.evidently.Evidently" implementationClass="org.evidently.idea.highlighting.EvidentlySyntaxHighlighterFactory" />
+		<lang.braceMatcher 
+			language="org.evidently.Evidently"
+			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
+			implementationClass="com.intellij.lang.PairedBraceMatcher"
+		/>
+		<annotator 
+			language="org.evidently.Evidently"
+			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
+			implementationClass="org.eclipse.xtext.idea.annotation.IssueAnnotator"
+		/>
+		<completion.contributor language="org.evidently.Evidently" implementationClass="org.evidently.idea.completion.EvidentlyCompletionContributor"/>
+		<pom.declarationSearcher implementation="org.evidently.idea.lang.pom.EvidentlyPomDeclarationSearcher"/>
+
+		<lang.psiStructureViewFactory 
+			language="org.evidently.Evidently"
+			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
+			implementationClass="com.intellij.lang.PsiStructureViewFactory"
+		/>
+		<facetType implementation="org.evidently.idea.facet.EvidentlyFacetType"/>
+		<lang.documentationProvider 
+			language="org.evidently.Evidently"
+			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
+			implementationClass="org.eclipse.xtext.idea.documentation.IdeaDocumentationProvider"
+		/>
+		<colorSettingsPage implementation="org.evidently.idea.highlighting.EvidentlyColorSettingsPage"/>
+		<highlightVisitor implementation="org.evidently.idea.highlighting.EvidentlySemanticHighlightVisitor"/>
+
+		<lang.formatter 
+			language="org.evidently.Evidently"
+			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
+			implementationClass="com.intellij.formatting.FormattingModelBuilder"
+		/>
+		<lang.commenter 
+			language="org.evidently.Evidently"
+			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
+			implementationClass="com.intellij.lang.CodeDocumentationAwareCommenter"
+		/>
+	</extensions>
+</idea-plugin>

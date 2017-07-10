@@ -1,0 +1,3 @@
+include 'org.evidently'
+include 'org.evidently.ide'
+include 'org.evidently.idea'
