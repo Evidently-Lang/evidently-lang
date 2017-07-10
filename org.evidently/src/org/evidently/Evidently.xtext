@@ -2,8 +2,211 @@ grammar org.evidently.Evidently with org.eclipse.xtext.common.Terminals
 
 generate evidently "http://www.evidently.org/Evidently"
 
-Model:
-	greetings+=Greeting*;
+PolicyFile:
+	(elements+=FileElem)*;
 	
-Greeting:
-	'Hello' name=ID '!';
+	
+ProgType:
+	'a' name='a'
+;
+
+
+FileElem:
+	ImportLevels
+	| Policy 
+	| Model
+	| Levels
+;
+	
+ImportLevels:
+	'using' 'levels' name=ID
+;	
+
+Policy:
+	'policy' name=ID '{' 
+		(elements+=PoBElem)*	
+	'}'
+	| 
+	'policy' name=ID params=GParams '{' 
+		(elements+=PoBElem)*	
+	'}'
+	
+;	
+
+GParams:
+	'<' params+=ID (',' params+=ID)*  '>'
+;
+
+PoBElem:
+	Use
+	| Release
+	| EnforceDirective 
+;
+
+Use:
+	UsePolicy
+	| UseElem
+;	
+
+
+UsePolicy:
+	'use' 'policy' name=ID ';'
+	| 'use' 'policy' name=ID 'as' alias=ID ';'
+	| 'use' 'policy' name=ID args=GArgs ';'
+	| 'use' 'policy' name=ID args=GArgs 'as' alias=ID ';'
+;	
+
+GArgs:
+	"<" args+=GenericArg (',' args+=GenericArg)* ">"
+;
+
+GenericArg:
+	name=ID
+	| '*' name="*"
+	| "{" names+=ID (',' names+=ID)*
+;
+
+
+UseElem:
+	'use' kind=UseKind name=ID ';'
+	| 'use' kind=UseKind name=ID 'as' alias=ID ';'
+;	
+
+UseKind: 
+	'model' 
+;
+
+
+
+Release:
+	'release' '(' what=ID ',' flow=LevelFlow  ')'  '=' '{' (releases+=RTime)* '}'
+	'release' '(' '*' what='*' ',' flow=LevelFlow  ')' ';' 
+	 
+;
+
+LevelFlow:
+	from=GenericArg "->" to=GenericArg
+;	
+
+RTime:
+	'when' '{' condition=Exp '}'
+	| 'unless' '{' notCondition=Exp'}'
+	
+;
+
+//TODO: need to do Exp, EvidentlyId, ProgId, and Exps
+Exp:
+	'a' name='a'
+;	
+
+EvidentlyId: ID;
+	
+EnforceDirective:
+	'enforce' mode=EnforceMode policy=ID	
+;	
+
+EnforceMode:
+	'static' | 'runtime'
+;
+
+Model:
+	'model' name=ID '{' elements=MBElem '}'
+;	
+
+MBElem: 
+	Use 
+	| Flowpoints
+	| Property
+;
+
+
+Flowpoints:
+	'flowpoints' name=ID ':' type=ProgType '=' '{' body=EvBody '}'
+	| 'flowpoints' name=ID '{' body=EvBody '}'
+;
+
+EvBody : EvExp;
+
+//TODO
+EvExp :
+	'a' name='a'
+;
+
+EvPredExtended : 'execution' | 'resultof' | 'this'  | 'cflow';
+EvScopePred    : 'within'    | 'typeof'   | 'named' | 'field';
+
+MethDescs:
+	elements+=MethDesc (',' elements+=MethDesc)* 
+;
+
+MethDesc:
+	name=IdOrStar
+	| name=IdOrStar '(' signature=(MethFormalDescs)? ')'
+	| type=TypeOrStar name=IdOrStar'(' signature=(MethFormalDescs)? ')'
+	;
+
+IdOrStar: EvidentlyId | '*';
+TypeOrStar: ProgType | '*';
+
+MethFormalDescs:
+	desc='...'
+	| descs+=TypeOrStar (',' descs+=TypeOrStar)*
+;
+
+Property:
+	'property' name=ID ':' type=ProgType spec=(EqSpec)? '{' expression=PropBody '}'
+	| 'property' name=ID spec=(EqSpec)? '{' expression=PropBody '}'
+	| 'property' name=ID formals=(PFormals)? ':' type=ProgType spec=(EqSpec)? '{' expression=PropBody '}'
+	| 'property' name=ID formals=(PFormals)? spec=(EqSpec)? '{' expression=PropBody '}'		
+;
+
+EqSpec :
+	spec+=(Specification)+
+;
+
+Specification:
+	requires=Requires assignable=Assignable ensures=Ensures
+	| assignable=Assignable ensures=Ensures
+	| requires=Requires ensures=Ensures 
+	| ensures=Ensures
+;
+
+
+Requires: 'requires' expression=Exp ';';
+Assignable: 'assignable' expression=Exp ';';
+Ensures: 'ensures' expression=Exp ';';
+
+PropBody : Exp;
+
+PFormals:
+	'(' args=Formals ')'
+;
+
+Formals:
+	elements+=Formal (',' elements+=Formal)*
+;
+
+Formal:
+	name=ID ':' type=ProgType
+	| name=ID
+;
+
+
+Levels:
+	'levels' name=ID '{' elements=LevElem '}'
+;	
+
+LevElem:
+	kind=LevelKind '{' elements=(LevelBodyElems)? '}'
+;
+
+LevelKind:
+	'sink' | 'source' | 'both'
+;
+
+LevelBodyElems:
+	elements+=LevelBodyElem (',' elements+=LevelBodyElem)*
+;
+LevelBodyElem:
+	name=ID
+;
