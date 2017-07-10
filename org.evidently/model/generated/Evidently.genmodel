@@ -6,11 +6,133 @@
     copyrightFields="false" runtimeVersion="2.12">
   <genPackages prefix="Evidently" basePackage="org.evidently" disposableProviderFactory="true"
       fileExtensions="evidently" ecorePackage="Evidently.ecore#/">
-    <genClasses ecoreClass="Evidently.ecore#//Model">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Model/greetings"/>
+    <genClasses ecoreClass="Evidently.ecore#//PolicyFile">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//PolicyFile/elements"/>
     </genClasses>
-    <genClasses ecoreClass="Evidently.ecore#//Greeting">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//Greeting/name"/>
+    <genClasses ecoreClass="Evidently.ecore#//ProgType">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//ProgType/name"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//FileElem">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//FileElem/name"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//ImportLevels"/>
+    <genClasses ecoreClass="Evidently.ecore#//Policy">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Policy/elements"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Policy/params"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//GParams">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//GParams/params"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//PoBElem"/>
+    <genClasses ecoreClass="Evidently.ecore#//Use">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//Use/alias"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//UsePolicy">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//UsePolicy/args"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//GArgs">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//GArgs/args"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//GenericArg">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//GenericArg/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//GenericArg/names"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//UseElem">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//UseElem/kind"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//Release">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//Release/what"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Release/flow"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Release/releases"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//LevelFlow">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//LevelFlow/from"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//LevelFlow/to"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//RTime">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//RTime/condition"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//RTime/notCondition"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//Exp">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//Exp/name"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//EnforceDirective">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//EnforceDirective/mode"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//EnforceDirective/policy"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//Model">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Model/elements"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//MBElem">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//MBElem/name"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//Flowpoints">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Flowpoints/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Flowpoints/body"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//EvBody"/>
+    <genClasses ecoreClass="Evidently.ecore#//EvExp">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//EvExp/name"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//MethDescs">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//MethDescs/elements"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//MethDesc">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//MethDesc/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//MethDesc/signature"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//MethDesc/type"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//TypeOrStar"/>
+    <genClasses ecoreClass="Evidently.ecore#//MethFormalDescs">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//MethFormalDescs/desc"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//MethFormalDescs/descs"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//Property">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Property/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Property/spec"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Property/expression"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Property/formals"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//EqSpec">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//EqSpec/spec"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//Specification">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Specification/requires"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Specification/assignable"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Specification/ensures"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//Requires">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Requires/expression"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//Assignable">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Assignable/expression"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//Ensures">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Ensures/expression"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//PropBody"/>
+    <genClasses ecoreClass="Evidently.ecore#//PFormals">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//PFormals/args"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//Formals">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Formals/elements"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//Formal">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//Formal/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Formal/type"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//Levels">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//Levels/elements"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//LevElem">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//LevElem/kind"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//LevElem/elements"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//LevelBodyElems">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Evidently.ecore#//LevelBodyElems/elements"/>
+    </genClasses>
+    <genClasses ecoreClass="Evidently.ecore#//LevelBodyElem">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Evidently.ecore#//LevelBodyElem/name"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>
