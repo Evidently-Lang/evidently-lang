@@ -1,16 +1,53 @@
-grammar org.evidently.Evidently with org.eclipse.xtext.common.Terminals
+grammar org.evidently.Evidently with org.eclipse.xtext.xbase.Xtype
+// with org.eclipse.xtext.common.Terminals
+import "http://www.eclipse.org/xtext/common/JavaVMTypes" as jvmTypes
+
+
+/**
+ * Removing left recursion (general rule)
+ * A -> A a | b
+ * by:
+ * A -> b A'
+ * A'-> aA' | (empty)
+ */
+
 
 generate evidently "http://www.evidently.org/Evidently"
 
+//DataType:
+//  'datatype' name=ID 
+//  'mapped-to' javaType=ProgType;
+//
+
+
 PolicyFile:
-	(elements+=FileElem)*;
-	
-	
-ProgType:
-	'a' name='a'
+	(elements+=FileElem)*
+	;
+
+ProgId: ID;
+
+EvidentlyId: 
+	ID ('.' ID)*
 ;
 
+ProgType:
+	 {ProgType} "byte" ProgTypePrime
+	| {ProgType} "short"  ProgTypePrime 
+	| {ProgType} "int"  ProgTypePrime
+	| {ProgType} "long"  ProgTypePrime
+ 	| {ProgType} "float"  ProgTypePrime
+ 	| {ProgType} "double"  ProgTypePrime
+ 	| {ProgType} "char"  ProgTypePrime
+ 	| {ProgType} "boolean" ProgTypePrime
+ 	| {ProgType} "void"
+	| javaType=[jvmTypes::JvmType|QualifiedName] ProgTypePrime // takes the place of ProgId rules.
+;
 
+ProgTypePrime:
+	("[" "]" ProgTypePrime)?
+;
+
+		
 FileElem:
 	ImportLevels
 	| Policy 
@@ -72,15 +109,16 @@ UseElem:
 	| 'use' kind=UseKind name=ID 'as' alias=ID ';'
 ;	
 
-UseKind: 
+UseKind:  
 	'model' 
 ;
 
 
 
 Release:
-	'release' '(' what=ID ',' flow=LevelFlow  ')'  '=' '{' (releases+=RTime)* '}'
-	'release' '(' '*' what='*' ',' flow=LevelFlow  ')' ';' 
+	'release' '(' what=EvidentlyId ',' flow=LevelFlow  ')'  '=' '{' (releases+=RTime)* '}'
+	| 'release' '(' what=EvidentlyId ',' flow=LevelFlow  ')' ';' 	
+	| 'release' '(' '*' what='*' ',' flow=LevelFlow  ')' ';' 
 	 
 ;
 
@@ -95,11 +133,34 @@ RTime:
 ;
 
 //TODO: need to do Exp, EvidentlyId, ProgId, and Exps
-Exp:
-	'a' name='a'
-;	
+//Exp: Addition; // map to toplevel rule
+//
+//// left recursion removed from expression grammar
+//Addition returns Expression:
+//  Multiplication ({Addition.left=current} '+' right=Multiplication)*;
+//
+//Multiplication returns Expression:
+//  Primary ({Multiplication.left=current} '*' right=Primary)*;
+//
+//Primary returns Expression:
+//  ProgType 
+//  | '(' Addition ')';
 
-EvidentlyId: ID;
+//NumberLiteral:
+//  value=INT;
+//
+//BooleanLiteral:
+//  "true" value="true"
+//  | "false" value="false"
+//;
+//
+//StringLiteral:
+//  value=STRING;
+
+Exp: 
+	'a' name='a'
+;
+
 	
 EnforceDirective:
 	'enforce' mode=EnforceMode policy=ID	
@@ -109,8 +170,10 @@ EnforceMode:
 	'static' | 'runtime'
 ;
 
+
+
 Model:
-	'model' name=ID '{' elements=MBElem '}'
+	'model' name=ID '{' (elements+=MBElem)* '}'
 ;	
 
 MBElem: 
@@ -125,13 +188,48 @@ Flowpoints:
 	| 'flowpoints' name=ID '{' body=EvBody '}'
 ;
 
+// this looks wrong but it's right. 
 EvBody : EvExp;
+EvExp : EvAnd;
+EvAnd returns EvExpression:
+  EvOr ({EvAnd.left=current} '&&' right=EvOr)*;
 
-//TODO
-EvExp :
-	'a' name='a'
-;
+EvOr returns EvExpression:
+  EvExpBase ({EvOr.left=current} '||' right=EvExpBase)*;
 
+EvExpBase returns EvExpression:
+  '(' EvAnd ')'
+  | predicate=EvPredExtended '(' description=MethDescs ')'
+  | predicate=EvScopePred '(' name=EvidentlyId ')'
+  | '!' EvAnd
+  ;
+  
+
+
+
+
+//EvExp :
+//	'(' EvExp ')' EvExpPrime
+//	| predicate=EvPredExtended '(' description=MethDescs ')' EvExpPrime 
+//	| predicate=EvScopePred '(' name=EvidentlyId ')' EvExpPrime 
+//	| '!' EvExp EvExpPrime 
+//;
+//
+//EvExpPrime:
+//	('&&' EvExp EvExpPrime)*
+//;
+//
+//EvExpPrimePrime:
+//	('||' EvExp EvExpPrimePrime)*		
+//;
+// EvExp (&& EvExp)
+/* 
+Removing left recursion (general rule)
+ * A -> A a | b
+ * by:
+ * A -> b A'
+ * A'-> aA' | (empty)
+ */
 EvPredExtended : 'execution' | 'resultof' | 'this'  | 'cflow';
 EvScopePred    : 'within'    | 'typeof'   | 'named' | 'field';
 
@@ -145,8 +243,14 @@ MethDesc:
 	| type=TypeOrStar name=IdOrStar'(' signature=(MethFormalDescs)? ')'
 	;
 
-IdOrStar: EvidentlyId | '*';
-TypeOrStar: ProgType | '*';
+IdOrStar: 
+	EvidentlyId 
+	| '*'
+;
+TypeOrStar: 
+	{TypeOrStar} '*' 
+	| ProgType
+;
 
 MethFormalDescs:
 	desc='...'
@@ -154,10 +258,9 @@ MethFormalDescs:
 ;
 
 Property:
-	'property' name=ID ':' type=ProgType spec=(EqSpec)? '{' expression=PropBody '}'
-	| 'property' name=ID spec=(EqSpec)? '{' expression=PropBody '}'
-	| 'property' name=ID formals=(PFormals)? ':' type=ProgType spec=(EqSpec)? '{' expression=PropBody '}'
-	| 'property' name=ID formals=(PFormals)? spec=(EqSpec)? '{' expression=PropBody '}'		
+	'property' name=ID (':' type=ProgType)? (spec=EqSpec)? '{' expression=PropBody '}'
+	| 'property' name=ID formals=PFormals (':' type=ProgType)? spec=(EqSpec)? '{' expression=PropBody '}'
+			
 ;
 
 EqSpec :
@@ -172,14 +275,14 @@ Specification:
 ;
 
 
-Requires: 'requires' expression=Exp ';';
+Requires: 'requires' expression=Exp';';
 Assignable: 'assignable' expression=Exp ';';
 Ensures: 'ensures' expression=Exp ';';
 
 PropBody : Exp;
 
 PFormals:
-	'(' args=Formals ')'
+	{PFormals} '('  (args=Formals)? ')' 
 ;
 
 Formals:
@@ -187,13 +290,13 @@ Formals:
 ;
 
 Formal:
-	name=ID ':' type=ProgType
-	| name=ID
+	//{Formal} name=ID
+	{Formal} name=ID ':' type=ProgType
 ;
 
 
 Levels:
-	'levels' name=ID '{' elements=LevElem '}'
+	'levels' name=ID '{' (elements+=LevElem)* '}'
 ;	
 
 LevElem:

@@ -6,7 +6,7 @@
         eType="#//FileElem" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ProgType" eSuperTypes="#//TypeOrStar">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="javaType" eType="ecore:EClass platform:/resource/org.eclipse.xtext.common.types/model/JavaVMTypes.ecore#//JvmType"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FileElem">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -69,8 +69,8 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="policy" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Model" eSuperTypes="#//FileElem">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="elements" eType="#//MBElem"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="elements" upperBound="-1"
+        eType="#//MBElem" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MBElem">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -82,8 +82,16 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EvBody"/>
-  <eClassifiers xsi:type="ecore:EClass" name="EvExp" eSuperTypes="#//EvBody">
+  <eClassifiers xsi:type="ecore:EClass" name="EvExp" eSuperTypes="#//EvBody"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EvExpression" eSuperTypes="#//EvExp">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="predicate" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="description" eType="#//MethDescs"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//EvExpression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//EvExpression"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MethDescs">
     <eStructuralFeatures xsi:type="ecore:EReference" name="elements" upperBound="-1"
@@ -151,8 +159,8 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Levels" eSuperTypes="#//FileElem">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="elements" eType="#//LevElem"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="elements" upperBound="-1"
+        eType="#//LevElem" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="LevElem">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -166,4 +174,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="LevelBodyElem">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EvAnd" eSuperTypes="#//EvExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EvOr" eSuperTypes="#//EvExpression"/>
 </ecore:EPackage>

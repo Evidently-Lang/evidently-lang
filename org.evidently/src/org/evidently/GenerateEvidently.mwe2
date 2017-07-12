@@ -9,9 +9,13 @@ Workflow {
 	
 	component = XtextGenerator {
 		configuration = {
+			
 			project = StandardProjectConfig {
 				baseName = "org.evidently"
 				rootPath = rootPath
+
+				
+
 				runtimeTest = {
 					enabled = true
 				}
@@ -27,6 +31,8 @@ Workflow {
 				web = {
 					enabled = true
 				}
+				
+				
 				createEclipseMetaData = true
 			}
 			code = {
@@ -37,14 +43,21 @@ Workflow {
 		}
 		language = StandardLanguage {
 			name = "org.evidently.Evidently"
-			fileExtensions = "evidently"
-
+			fileExtensions = "epl"
+            
 			serializer = {
 				generateStub = false
 			}
 			validator = {
 				// composedCheck = "org.eclipse.xtext.validation.NamesAreUniqueValidator"
 			}
+			
+			parserGenerator = {
+			  options = {
+			    backtrack = true
+			  }
+			}
+			
 		}
 	}
 }
