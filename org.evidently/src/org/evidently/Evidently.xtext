@@ -1,7 +1,6 @@
-grammar org.evidently.Evidently with org.eclipse.xtext.xbase.Xtype
-// with org.eclipse.xtext.common.Terminals
+grammar org.evidently.Evidently with org.eclipse.xtext.xbase.Xbase //with org.eclipse.xtext.xbase.Xtype
 import "http://www.eclipse.org/xtext/common/JavaVMTypes" as jvmTypes
-
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 
 /**
  * Removing left recursion (general rule)
@@ -11,14 +10,7 @@ import "http://www.eclipse.org/xtext/common/JavaVMTypes" as jvmTypes
  * A'-> aA' | (empty)
  */
 
-
 generate evidently "http://www.evidently.org/Evidently"
-
-//DataType:
-//  'datatype' name=ID 
-//  'mapped-to' javaType=ProgType;
-//
-
 
 PolicyFile:
 	(elements+=FileElem)*
@@ -28,6 +20,10 @@ ProgId: ID;
 
 EvidentlyId: 
 	ID ('.' ID)*
+;
+
+BooleanLiteral:
+	"true" | "false"
 ;
 
 ProgType:
@@ -46,6 +42,10 @@ ProgType:
 ProgTypePrime:
 	("[" "]" ProgTypePrime)?
 ;
+
+
+//terminal INT: 
+//    ('0'..'9')+;
 
 		
 FileElem:
@@ -127,40 +127,74 @@ LevelFlow:
 ;	
 
 RTime:
-	'when' '{' condition=Exp '}'
-	| 'unless' '{' notCondition=Exp'}'
+	'when' '{' condition=XExpression '}'
+	| 'unless' '{' notCondition=XExpression '}'
 	
 ;
 
-//TODO: need to do Exp, EvidentlyId, ProgId, and Exps
-//Exp: Addition; // map to toplevel rule
-//
-//// left recursion removed from expression grammar
-//Addition returns Expression:
-//  Multiplication ({Addition.left=current} '+' right=Multiplication)*;
-//
-//Multiplication returns Expression:
-//  Primary ({Multiplication.left=current} '*' right=Primary)*;
-//
-//Primary returns Expression:
-//  ProgType 
-//  | '(' Addition ')';
-
-//NumberLiteral:
-//  value=INT;
-//
-//BooleanLiteral:
-//  "true" value="true"
-//  | "false" value="false"
-//;
-//
-//StringLiteral:
-//  value=STRING;
-
-Exp: 
+Exp:
 	'a' name='a'
 ;
 
+//Exp returns XExpression:	
+//;
+
+//ExpDiv returns Expression:
+//  ExpMod ({ExpDiv.left=current} '/' right=ExpMod)*;
+//
+//ExpApp returns Expression:
+//  ExpPlus ({ExpMod.left=current} '%' right=ExpPlus)*
+//;
+////
+//ExpDiv returns Expression:
+//  ExpMod ({ExpDiv.left=current} '/' right=ExpMod)*;
+//
+//ExpMod returns Expression:
+//  ExpPlus ({ExpMod.left=current} '%' right=ExpPlus)*
+//;
+////
+//ExpPlus returns Expression:
+//  ExpMinus ({ExpPlus.left=current} '+' right=ExpMinus)*;
+//
+//ExpMinus returns Expression:
+//  ExpLt ({ExpMinus.left=current} '-' right=ExpLt)*
+//;
+////
+//ExpLt returns Expression:
+//  ExpLeq ({ExpLt.left=current} '<' right=ExpLeq)*;
+//
+//ExpLeq returns Expression:
+//  ExpGt ({ExpLeq.left=current} '<=' right=ExpGt)*
+//;
+////
+//ExpGt returns Expression:
+//  ExpGeq ({ExpGt.left=current} '>' right=ExpGeq)*;
+//
+//ExpGeq returns Expression:
+//  ExpEq ({ExpGeq.left=current} '>=' right=ExpEq)*
+//;
+////
+//ExpEq returns Expression:
+//  ExpNeq ({ExpEq.left=current} '==' right=ExpNeq)*;
+//
+//ExpNeq returns Expression:
+//  ExpAnd ({ExpNeq.left=current} '!=' right=ExpAnd)*
+//;
+/////
+//ExpAnd returns Expression:
+//  ExpOr ({ExpAnd.left=current} '&&' right=ExpOr)*;
+//
+//ExpOr returns Expression:
+//  ExpBase ({ExpOr.left=current} '||' right=ExpBase)*
+//;
+/////
+//
+//// non left recursive rules 
+//ExpBase returns Expression:
+//	INT | STRING | BooleanLiteral | EvidentlyId // simple terminals
+//	'(' ExpAnd ')' // change to top level one.
+//	
+//;
 	
 EnforceDirective:
 	'enforce' mode=EnforceMode policy=ID	
@@ -208,21 +242,6 @@ EvExpBase returns EvExpression:
 
 
 
-//EvExp :
-//	'(' EvExp ')' EvExpPrime
-//	| predicate=EvPredExtended '(' description=MethDescs ')' EvExpPrime 
-//	| predicate=EvScopePred '(' name=EvidentlyId ')' EvExpPrime 
-//	| '!' EvExp EvExpPrime 
-//;
-//
-//EvExpPrime:
-//	('&&' EvExp EvExpPrime)*
-//;
-//
-//EvExpPrimePrime:
-//	('||' EvExp EvExpPrimePrime)*		
-//;
-// EvExp (&& EvExp)
 /* 
 Removing left recursion (general rule)
  * A -> A a | b
@@ -258,28 +277,35 @@ MethFormalDescs:
 ;
 
 Property:
-	'property' name=ID (':' type=ProgType)? (spec=EqSpec)? '{' expression=PropBody '}'
-	| 'property' name=ID formals=PFormals (':' type=ProgType)? spec=(EqSpec)? '{' expression=PropBody '}'
+	'property' name=ID (':' type=ProgType)? (spec=Specification)? '{' expression=XExpression '}'
+	| 'property' name=ID formals=PFormals (':' type=ProgType)? (spec=Specification)? '{' expression=XExpression '}'
 			
 ;
 
-EqSpec :
-	spec+=(Specification)+
-;
+//EqSpec :
+//	{EqSpec} (spec+=Specification)*
+//;
 
 Specification:
-	requires=Requires assignable=Assignable ensures=Ensures
-	| assignable=Assignable ensures=Ensures
-	| requires=Requires ensures=Ensures 
-	| ensures=Ensures
+	{Specification} (requires+=Requires)+ (assignable+=Assignable)* (ensures+=Ensures)+
+	| {Specification} (assignable+=Assignable)+ (ensures+=Ensures)+
+	| {Specification} (ensures+=Ensures)+
 ;
 
 
-Requires: 'requires' expression=Exp';';
-Assignable: 'assignable' expression=Exp ';';
-Ensures: 'ensures' expression=Exp ';';
+Requires: 
+	'requires' expression=XExpression ';'
+;
+Assignable: 
+	'assignable' expression=XExpression ';'
+;
+Ensures: 
+	'ensures' expression=XExpression ';'
+;
 
-PropBody : Exp;
+PropBody : 
+	'a' name='a'
+;
 
 PFormals:
 	{PFormals} '('  (args=Formals)? ')' 
@@ -290,8 +316,8 @@ Formals:
 ;
 
 Formal:
-	//{Formal} name=ID
-	{Formal} name=ID ':' type=ProgType
+	{Formal} name=ID
+	| {Formal} name=ID ':' type=ProgType
 ;
 
 

@@ -56,12 +56,12 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RTime">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="condition" eType="#//Exp"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="condition" eType="ecore:EClass platform:/resource/org.eclipse.xtext.xbase/model/Xbase.ecore#//XExpression"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="notCondition" eType="#//Exp"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="notCondition" eType="ecore:EClass platform:/resource/org.eclipse.xtext.xbase/model/Xbase.ecore#//XExpression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Exp" eSuperTypes="#//PropBody">
+  <eClassifiers xsi:type="ecore:EClass" name="Exp">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EnforceDirective" eSuperTypes="#//PoBElem">
@@ -113,38 +113,36 @@
   <eClassifiers xsi:type="ecore:EClass" name="Property" eSuperTypes="#//MBElem">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//ProgType"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="spec" eType="#//EqSpec"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="spec" eType="#//Specification"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//PropBody"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="ecore:EClass platform:/resource/org.eclipse.xtext.xbase/model/Xbase.ecore#//XExpression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="formals" eType="#//PFormals"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="EqSpec">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="spec" upperBound="-1" eType="#//Specification"
-        containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Specification">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="requires" eType="#//Requires"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="assignable" eType="#//Assignable"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="ensures" eType="#//Ensures"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="requires" upperBound="-1"
+        eType="#//Requires" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="assignable" upperBound="-1"
+        eType="#//Assignable" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ensures" upperBound="-1"
+        eType="#//Ensures" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Requires">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//Exp"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="ecore:EClass platform:/resource/org.eclipse.xtext.xbase/model/Xbase.ecore#//XExpression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Assignable">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//Exp"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="ecore:EClass platform:/resource/org.eclipse.xtext.xbase/model/Xbase.ecore#//XExpression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Ensures">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//Exp"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="ecore:EClass platform:/resource/org.eclipse.xtext.xbase/model/Xbase.ecore#//XExpression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="PropBody"/>
+  <eClassifiers xsi:type="ecore:EClass" name="PropBody">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PFormals">
     <eStructuralFeatures xsi:type="ecore:EReference" name="args" eType="#//Formals"
         containment="true"/>
