@@ -491,8 +491,6 @@
 				menubarPath="group.properties"
 				id="org.evidently.Evidently.rulerContextMenu.openBreapointPropertiesAction">
 			</action>
-			
-					
 		</viewerContribution>
 	</extension>
 	<!-- Introduce Local Variable Refactoring -->
