@@ -3,6 +3,9 @@
  */
 package org.evidently.scoping;
 
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.xtext.scoping.IScope;
 import org.evidently.scoping.AbstractEvidentlyScopeProvider;
 
 /**
@@ -13,4 +16,9 @@ import org.evidently.scoping.AbstractEvidentlyScopeProvider;
  */
 @SuppressWarnings("all")
 public class EvidentlyScopeProvider extends AbstractEvidentlyScopeProvider {
+  @Override
+  public IScope getScope(final EObject context, final EReference reference) {
+    System.out.println("GETSCIPE");
+    return super.getScope(context, reference);
+  }
 }

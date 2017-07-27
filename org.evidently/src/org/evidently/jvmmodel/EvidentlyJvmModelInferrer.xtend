@@ -8,10 +8,35 @@ import org.eclipse.xtext.xbase.jvmmodel.AbstractModelInferrer
 import org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder
 import org.evidently.evidently.PolicyFile
+import org.evidently.evidently.Policy
+import org.evidently.evidently.PoBElem
+import org.evidently.evidently.Use
+import org.evidently.evidently.Release
+import org.evidently.evidently.Model
+import org.evidently.evidently.FileElem
+import org.evidently.evidently.UseElem
+import org.evidently.evidently.MBElem
+import org.evidently.evidently.Flowpoints
+import org.eclipse.xtext.common.types.JvmTypeReference
+import org.evidently.evidently.ProgType
+import org.evidently.evidently.PropertyOrFlowpoint
+import org.eclipse.xtext.common.types.JvmField
+import org.eclipse.xtext.common.types.JvmVisibility
+import org.eclipse.xtext.common.types.JvmAnnotationType
+import org.evidently.annotations.ReleasePolicyFor
+import java.util.ArrayList
+import java.util.List
+import org.evidently.evidently.RTime
+import org.eclipse.xtext.xbase.XExpression
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import org.evidently.agent.Flowpoint
+import org.evidently.agent.MethodCall
+import org.evidently.agent.ASTType
+import org.evidently.evidently.EvExp
 
 /**
  * <p>Infers a JVM model from the source model.</p> 
- *
+ * 
  * <p>The JVM model should contain all elements that would appear in the Java code 
  * which is generated from the source model. Other models link against the JVM model rather than the source model.</p>     
  */
@@ -45,11 +70,19 @@ class EvidentlyJvmModelInferrer extends AbstractModelInferrer {
 	 *            rely on linking using the index if isPreIndexingPhase is
 	 *            <code>true</code>.
 	 */
-	def dispatch void infer(PolicyFile element, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
-		// Here you explain how your model is mapped to Java elements, by writing the actual translation code.
-		
-		// An implementation for the initial hello world example could look like this:
-// 		acceptor.accept(element.toClass("my.company.greeting.MyGreetings")) [
+//	def dispatch void infer(PolicyFile element, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
+//		
+//		
+//		for(e : element.elements){
+//			if(e instanceof Policy){
+//				
+//			}
+//		}
+//		
+//		// Here you explain how your model is mapped to Java elements, by writing the actual translation code.
+//		
+//		// An implementation for the initial hello world example could look like this:
+// 		acceptor.accept(element.toClass("org.evidently.policy.MyGreetings")) [
 // 			for (greeting : element.greetings) {
 // 				members += greeting.toMethod("hello" + greeting.name, typeRef(String)) [
 // 					body = '''
@@ -58,5 +91,351 @@ class EvidentlyJvmModelInferrer extends AbstractModelInferrer {
 //				]
 //			}
 //		]
+//	}
+	def String fromJavaName(String name) {
+		if (name.equals("$STAR")) {
+			return "*"
+		}
+		return name.replaceAll("___", ".")
 	}
+
+	def String toJavaName(PropertyOrFlowpoint name) {
+		if (name instanceof Flowpoints) {
+			return toJavaName(name as Flowpoints)
+		} else if (name instanceof org.evidently.evidently.Property) {
+			return toJavaName(name as org.evidently.evidently.Property)
+		}
+	}
+
+	def String toJavaName(org.evidently.evidently.Property name) {
+		return toJavaName((name.eContainer as Model).name + "." + name.name)
+	}
+
+	def String toJavaName(Flowpoints name) {
+		return toJavaName((name.eContainer as Model).name + "." + name.name)
+	}
+
+	def String toJavaName(String name) {
+
+		if (name.equals("*")) {
+			return "$STAR"
+		}
+
+		return name.replaceAll("\\.", "___")
+	}
+
+	var currentId = 0
+
+	def int newId() {
+		currentId++
+		return currentId
+	}
+
+//	def dispatch void infer(FileElem element, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
+//		System.out.println("FILE - ELEM")
+//
+//	}
+
+	int flowpointIndex;
+
+	def getNextFlowpointName() {
+		val name = String.format("Flowpoint$%d", flowpointIndex)
+		flowpointIndex = ( flowpointIndex + 1 ) 
+		return name
+	}
+
+	def evExpToJavaExpression(EvExp expression){
+		
+		var node = NodeModelUtils.getNode(expression)
+
+		var base = NodeModelUtils.getTokenText(node)
+		
+		
+		base = base.replaceAll("(within)\\((.*?)\\)", "$1(\"$2\")");
+		base = base.replaceAll("(execution)\\((.*?)\\)", "$1(\"$2\")");
+		base = base.replaceAll("(resultof)\\((.*?)\\)", "$1(\"$2\")");
+		base = base.replaceAll("(this)\\((.*?)\\)", "pThis(\"$2\")");
+		base = base.replaceAll("(cflow)\\((.*?)\\)", "$1(\"$2\")");
+		base = base.replaceAll("(named)\\((.*?)\\)", "$1(\"$2\")");
+		base = base.replaceAll("(field)\\((.*?)\\)", "$1(\"$2\")");
+		base = base.replaceAll("(typeof)\\((.*?)\\)", "$1(\"$2\")");
+		
+		return base
+		
+	}
+
+	def dispatch void infer(Flowpoints flowpoint, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
+
+
+		val modelName = (flowpoint.eContainer as Model).name
+		val flowpointName = flowpoint.name
+		val fqFlowpointName = '''«modelName».«flowpointName»'''
+		val className = getNextFlowpointName()
+
+		// this is what we are going to transform
+		val expression = flowpoint.body as EvExp
+		
+		System.out.println('''Generating Flowpoint: «fqFlowpointName» in class org.evidently.flowpoints.«className»...''')
+		
+		
+		acceptor.accept(flowpoint.toClass("org.evidently.flowpoints." + className)) [
+		
+			members += flowpoint.toConstructor[
+						parameters += flowpoint.toParameter("scope", typeRef(String))
+						parameters += flowpoint.toParameter("type", typeRef(String))
+						parameters += flowpoint.toParameter("currentClass", typeRef(String))
+						parameters += flowpoint.toParameter("currentMethod", typeRef(String))
+						parameters += flowpoint.toParameter("name", typeRef(String))
+						parameters += flowpoint.toParameter("astType", typeRef("org.evidently.agent.ASTType"))
+						parameters += flowpoint.toParameter("lastMethodCall", typeRef("org.evidently.agent.MethodCall"))
+		
+						body = '''
+							super(scope, type, currentClass, currentMethod, name, astType, lastMethodCall);
+						'''
+				
+			]
+				
+			
+		
+			members += flowpoint.toMethod('''getName''', typeRef(String)) [
+						documentation = '''Flowpoint name method for«fqFlowpointName» '''
+						body = '''
+							return "«fqFlowpointName»";					
+						'''					
+					]
+					
+			
+			members += flowpoint.toMethod('''getFlowpointFor''', typeRef(String)) [
+						documentation = '''Flowpoint identification method for«fqFlowpointName» '''				
+						body = '''
+						
+							System.out.println(String.format("[Evidently] [GENERATED] Calling Flowpoint (%s) with %s,%s,%s,%s,%s,%s", getName(), scope, type, currentClass, currentMethod, name, astType.toString()));
+							
+						
+							boolean yes = «evExpToJavaExpression(expression)»;
+							
+							
+							if(yes){
+								return getName();
+							}
+							
+							return null;
+												
+						'''					
+					]
+					
+					
+					
+			superTypes += typeRef("org.evidently.agent.Flowpoint")
+			
+		]
+		
+
+	}
+
+	def dispatch void infer(Policy policy, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
+		System.out.println("FILE - POLICY isPreIndexingPhase: " + isPreIndexingPhase)
+
+		//
+		// we translate release statements
+		//
+		var contextVariables = newArrayList()
+
+		//
+		// first, figure out all the "use" statements for context.
+		//
+		for (PoBElem e : policy.elements) {
+			if (e instanceof UseElem) {
+				// import everything 
+				var UseElem theUse = e as UseElem
+
+				var Model modelToImport = theUse.model
+
+				// grab all the properties and flowpoints
+				for (MBElem mElem : modelToImport.elements) {
+
+					if (mElem instanceof Flowpoints) {
+
+						var Flowpoints fp = mElem as Flowpoints
+
+						contextVariables += fromJavaName(toJavaName(fp)) -> fp.type
+					}
+
+					if (mElem instanceof org.evidently.evidently.Property) {
+
+						var org.evidently.evidently.Property prop = mElem as org.evidently.evidently.Property
+
+						contextVariables += fromJavaName(toJavaName(prop)) -> prop.type
+					}
+				}
+			}
+		}
+
+		// var jvmTypeReference= fromSap.sapType;
+		// var param = toParameter("sapOb",jvmTypeReference)
+		// TODO -- only do code gen for policies that are enforced. 
+		val context = contextVariables
+
+		acceptor.accept(policy.toClass("org.evidently.policy." + policy.name)) [
+
+			// add all the context variables
+			for (PoBElem e : policy.elements) {
+				if (e instanceof Release) {
+
+					val idx = newId()
+
+					// TODO - For now we are assuming that the "what" is always a  * or a fully qualified name -- the as syntax is not supported
+					val name = toJavaName(e.what)
+
+//				for(var int i=0; i< context.size(); i++){
+//					val Pair<String,ProgType> p = context.get(i)
+//					
+//					if(p.getValue().javaType==null){
+//						val JvmField fi = policy.toField('''release_«idx»_«name»_arg«i»''', typeRef(p.getValue().type))						
+//						fi.setVisibility(JvmVisibility.PUBLIC);
+//						members+=fi					
+//					}else{
+//						val JvmField fi =policy.toField('''release_«idx»_«name»_arg«i»''', typeRef(p.getValue().javaType))
+//						fi.setVisibility(JvmVisibility.PUBLIC);
+//						//fi.
+//						members+=fi					
+//												
+//					}
+//				}
+//				
+					val whens = newArrayList()
+					val unlesses = newArrayList()
+					// collect when/until expressions
+					for (RTime r : e.releases) {
+
+						if (r.type == 'when') {
+							whens += r.condition
+						}
+
+						if (r.type == 'unless') {
+							unlesses += r.notCondition
+						}
+					}
+
+					// create the field args
+					// we generate three methods.
+					// release_id_what() <-- the base name
+					// releaes_id_what_when() <-- the when conditions
+					// release_id_what_unless() <-- // the unless conditions. if not specified, it is always !true 
+					// this is always the same
+					val mBase = e.toMethod('''release_«idx»_«name»''', typeRef(boolean)) [
+						documentation = '''Exposed policy method'''
+						body = '''
+							return release_«idx»_«name»_when(«contextToParams(context)») && !release_«idx»_«name»_unless(«contextToParams(context)») ;
+						'''
+					]
+
+					mBase.annotations +=
+						e.toAnnotation("org.evidently.annotations.ReleasePolicyFor", fromJavaName(name))
+
+					val mWhen = e.toMethod('''release_«idx»_«name»_when''', typeRef(boolean)) [
+						documentation = '''The "when" portion of the release statement'''
+
+						if (whens.size() == 0) {
+							body = '''
+								return true;
+							'''
+						} else {
+							body = '''
+								return «expressionsToBody(context, whens)»;
+							'''
+						}
+					]
+
+					// TODO -- do expression substution 
+					val mUnless = e.toMethod('''release_«idx»_«name»_unless''', typeRef(boolean)) [
+						documentation = '''The unless portion of the release statement'''
+
+						if (unlesses.size() == 0) {
+							body = '''
+								return  false;
+							'''
+						} else {
+							body = '''
+								return «expressionsToBody(context, whens)»;
+							'''
+						}
+					]
+
+					for (var int i = 0; i < context.size(); i++) {
+						val Pair<String, ProgType> p = context.get(i)
+
+						if (p.getValue().javaType == null) {
+							mBase.parameters += e.toParameter('''arg«i»''', typeRef(p.getValue().type))
+							mWhen.parameters += e.toParameter('''arg«i»''', typeRef(p.getValue().type))
+							mUnless.parameters += e.toParameter('''arg«i»''', typeRef(p.getValue().type));
+						} else {
+							mBase.parameters += e.toParameter('''arg«i»''', typeRef(p.getValue().javaType))
+							mWhen.parameters += e.toParameter('''arg«i»''', typeRef(p.getValue().javaType))
+							mUnless.parameters += e.toParameter('''arg«i»''', typeRef(p.getValue().javaType));
+						}
+
+						mBase.parameters.last.annotations +=
+							e.toAnnotation("org.evidently.annotations.ReleaseParam", p.getKey())
+						mWhen.parameters.last.annotations +=
+							e.toAnnotation("org.evidently.annotations.ReleaseParam", p.getKey())
+						mUnless.parameters.last.annotations +=
+							e.toAnnotation("org.evidently.annotations.ReleaseParam", p.getKey())
+					}
+
+					members += mBase
+					members += mWhen
+					members += mUnless
+
+				}
+
+			}
+		]
+
+//		acceptor.accept(policy.toClass("org.evidently.policy." + policy.name)) 
+//		
+//		[
+// 				members += policy.toMethod("hello" + "dude", typeRef(String)) [
+// 					body = '''
+//						return "Hello «greeting.name»";
+//					'''
+//				]
+//			
+//		]
+	}
+
+	// NOTE -- multiple WHEN clauses create a disjunction 
+	// ANY of them can be satisfied. 
+	def expressionsToBody(ArrayList<Pair<String, ProgType>> pairs, ArrayList<XExpression> expressions) {
+
+		var List<String> buffer = new ArrayList<String>();
+
+		for (XExpression  e : expressions) {
+
+			var node = NodeModelUtils.getNode(e)
+
+			var txt = NodeModelUtils.getTokenText(node)
+
+			// this is bad but quick
+			for (var i = 0; i < pairs.size(); i++) {
+				var Pair<String, ProgType> p = pairs.get(i)
+				txt = txt.replaceAll(p.getKey(), "arg" + i)
+			}
+
+			buffer.add(txt);
+		}
+
+		return String.join("||", buffer);
+	}
+
+	def contextToParams(ArrayList<Pair<String, ProgType>> pairs) {
+
+		var List<String> args = new ArrayList<String>();
+
+		for (var int i = 0; i < pairs.size(); i++) {
+			args.add('''arg«i»''')
+		}
+		return String.join(", ", args)
+	}
+
 }

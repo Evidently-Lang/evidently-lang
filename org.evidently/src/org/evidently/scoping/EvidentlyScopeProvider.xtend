@@ -3,6 +3,8 @@
  */
 package org.evidently.scoping
 
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EReference
 
 /**
  * This class contains custom scoping description.
@@ -12,4 +14,22 @@ package org.evidently.scoping
  */
 class EvidentlyScopeProvider extends AbstractEvidentlyScopeProvider {
 
+
+	override getScope(EObject context, EReference reference) {
+		
+		System.out.println("GETSCIPE");
+		
+	    // We want to define the Scope for the Element's superElement cross-reference
+//	    if (context instanceof Element
+//	            && reference == MyDslPackage.Literals.ELEMENT__SUPER_ELEMENT) {
+//	        // Collect a list of candidates by going through the model
+//	        // EcoreUtil2 provides useful functionality to do that
+//	        // For example searching for all elements within the root Object's tree
+//	        val rootElement = EcoreUtil2.getRootContainer(context)
+//	        val candidates = EcoreUtil2.getAllContentsOfType(rootElement, Element)
+//	        // Create IEObjectDescriptions and puts them into an IScope instance
+//	        return Scopes.scopeFor(candidates)
+//	    }
+	    return super.getScope(context, reference);
+	}
 }

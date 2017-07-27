@@ -6,6 +6,7 @@
         eType="#//FileElem" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ProgType" eSuperTypes="#//TypeOrStar">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="javaType" eType="ecore:EClass platform:/resource/org.eclipse.xtext.common.types/model/JavaVMTypes.ecore#//JvmType"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FileElem">
@@ -23,10 +24,10 @@
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PoBElem"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Use" eSuperTypes="#//PoBElem #//MBElem">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="alias" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Use" eSuperTypes="#//PoBElem #//MBElem"/>
   <eClassifiers xsi:type="ecore:EClass" name="UsePolicy" eSuperTypes="#//Use">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="alias" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="args" eType="#//GArgs"
         containment="true"/>
   </eClassifiers>
@@ -41,9 +42,11 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UseElem" eSuperTypes="#//Use">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="model" eType="#//Model"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PropertyOrFlowpoint"/>
   <eClassifiers xsi:type="ecore:EClass" name="Release" eSuperTypes="#//PoBElem">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="what" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="what" eType="#//PropertyOrFlowpoint"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="flow" eType="#//LevelFlow"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="releases" upperBound="-1"
@@ -56,6 +59,7 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RTime">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="condition" eType="ecore:EClass platform:/resource/org.eclipse.xtext.xbase/model/Xbase.ecore#//XExpression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="notCondition" eType="ecore:EClass platform:/resource/org.eclipse.xtext.xbase/model/Xbase.ecore#//XExpression"
@@ -72,10 +76,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="elements" upperBound="-1"
         eType="#//MBElem" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MBElem">
+  <eClassifiers xsi:type="ecore:EClass" name="MBElem"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Flowpoints" eSuperTypes="#//PropertyOrFlowpoint #//MBElem">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Flowpoints" eSuperTypes="#//MBElem">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//ProgType"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="body" eType="#//EvBody"
@@ -110,7 +113,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="descs" upperBound="-1"
         eType="#//TypeOrStar" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Property" eSuperTypes="#//MBElem">
+  <eClassifiers xsi:type="ecore:EClass" name="Property" eSuperTypes="#//PropertyOrFlowpoint #//MBElem">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//ProgType"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="spec" eType="#//Specification"

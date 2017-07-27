@@ -8,6 +8,16 @@ import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 
+
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.xtext.generator.AbstractGenerator
+import org.eclipse.xtext.generator.IFileSystemAccess2
+import org.eclipse.xtext.generator.IGeneratorContext
+import org.eclipse.xtext.naming.IQualifiedNameProvider
+ 
+import com.google.inject.Inject
+import org.evidently.evidently.Policy
+
 /**
  * Generates code from your model files on save.
  * 
@@ -15,11 +25,23 @@ import org.eclipse.xtext.generator.IGeneratorContext
  */
 class EvidentlyGenerator extends AbstractGenerator {
 
+	@Inject extension IQualifiedNameProvider
+
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-//		fsa.generateFile('greetings.txt', 'People to greet: ' + 
-//			resource.allContents
-//				.filter(Greeting)
-//				.map[name]
-//				.join(', '))
+
+		 for (e : resource.allContents.toIterable.filter(Policy)) {
+	        fsa.generateFile(
+	            e.fullyQualifiedName.toString("/") + ".java",
+	            e.compile)
+	    }
+
 	}
+	
+	def compile(Policy e) '''
+    package <<e.eContainer.fullyQualifiedName>>;
+        
+    public class <<e.name>> {
+
+    }
+	'''
 }

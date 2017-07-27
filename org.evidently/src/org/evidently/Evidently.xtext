@@ -27,15 +27,15 @@ BooleanLiteral:
 ;
 
 ProgType:
-	 {ProgType} "byte" ProgTypePrime
-	| {ProgType} "short"  ProgTypePrime 
-	| {ProgType} "int"  ProgTypePrime
-	| {ProgType} "long"  ProgTypePrime
- 	| {ProgType} "float"  ProgTypePrime
- 	| {ProgType} "double"  ProgTypePrime
- 	| {ProgType} "char"  ProgTypePrime
- 	| {ProgType} "boolean" ProgTypePrime
- 	| {ProgType} "void"
+	 {ProgType} type="byte" ProgTypePrime
+	| {ProgType} type="short"  ProgTypePrime 
+	| {ProgType} type="int"  ProgTypePrime
+	| {ProgType} type="long"  ProgTypePrime
+ 	| {ProgType} type="float"  ProgTypePrime
+ 	| {ProgType} type="double"  ProgTypePrime
+ 	| {ProgType} type="char"  ProgTypePrime
+ 	| {ProgType} type="boolean" ProgTypePrime
+ 	| {ProgType} type="void"
 	| javaType=[jvmTypes::JvmType|QualifiedName] ProgTypePrime // takes the place of ProgId rules.
 ;
 
@@ -105,30 +105,50 @@ GenericArg:
 
 
 UseElem:
-	'use' kind=UseKind name=ID ';'
-	| 'use' kind=UseKind name=ID 'as' alias=ID ';'
+	'use' kind=UseKind model=[Model|QualifiedName]';'// ';'
+	//| 'use' kind=UseKind importedNamespace=QualifiedNameWithoutWildcard ';'	
+	//| 'use' kind=UseKind name=ID 'as' alias=ID ';' 
 ;	
+
+//UseElem:
+//	'use' kind=UseKind name=ID ';'
+//	| 'use' kind=UseKind name=ID 'as' alias=ID ';'
+//;	
+
 
 UseKind:  
 	'model' 
 ;
 
 
+    
+QualifiedNameWithoutWildcard:
+    QualifiedName '.*'?;
+
+
+PropertyOrFlowpoint:
+	Flowpoints | Property
+;
+
 
 Release:
-	'release' '(' what=EvidentlyId ',' flow=LevelFlow  ')'  '=' '{' (releases+=RTime)* '}'
-	| 'release' '(' what=EvidentlyId ',' flow=LevelFlow  ')' ';' 	
-	| 'release' '(' '*' what='*' ',' flow=LevelFlow  ')' ';' 
-	 
+	'release' '(' what=[PropertyOrFlowpoint|QualifiedName] ',' flow=LevelFlow  ')'  '=' '{' (releases+=RTime)* '}'
+	//| 'release' '(' what=[Model] ',' flow=LevelFlow  ')'  '=' '{' (releases+=RTime)* '}'
+	//| 'release' '(' '*' wild='*' ',' flow=LevelFlow  ')' ';' 
+	
+//	| 'release' '(' what=EvidentlyId ',' flow=LevelFlow  ')' ';' 	
+//	| 'release' '(' '*' what='*' ',' flow=LevelFlow  ')' ';' 
+//	 
 ;
+
 
 LevelFlow:
 	from=GenericArg "->" to=GenericArg
 ;	
 
 RTime:
-	'when' '{' condition=XExpression '}'
-	| 'unless' '{' notCondition=XExpression '}'
+	 type='when'  '{' condition=XExpression '}'
+	| type='unless' '{' notCondition=XExpression '}'
 	
 ;
 
