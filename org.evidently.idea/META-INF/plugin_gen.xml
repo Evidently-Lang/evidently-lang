@@ -5,12 +5,12 @@
 			class="org.evidently.evidently.EvidentlyPackage"
 		/>
 		<resourceFactory 
-			type="evidently"
+			type="epl"
 			class="org.eclipse.xtext.resource.IResourceFactory"
 			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
 		/>
 		<resourceServiceProvider
-			uriExtension="evidently"
+			uriExtension="epl"
 			class="org.eclipse.xtext.idea.resource.IResourceIdeaServiceProvider"
 			factoryClass="org.evidently.idea.EvidentlyExtensionFactory"
 		/>
