@@ -33,6 +33,10 @@ import org.evidently.agent.Flowpoint
 import org.evidently.agent.MethodCall
 import org.evidently.agent.ASTType
 import org.evidently.evidently.EvExp
+import org.evidently.evidently.Levels
+import org.evidently.evidently.LevElem
+import org.evidently.evidently.LevelBodyElem
+import org.eclipse.xtext.common.types.JvmType
 
 /**
  * <p>Infers a JVM model from the source model.</p> 
@@ -231,6 +235,58 @@ class EvidentlyJvmModelInferrer extends AbstractModelInferrer {
 		]
 		
 
+	}
+	
+	def dispatch void infer(Levels levels, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
+	
+		var sinks = newHashSet()
+		var sources = newHashSet()
+				
+		for(LevElem e : levels.elements){			
+			for(LevelBodyElem s : e.elements.elements){
+				if(e.kind=='sink'){
+					sinks.add(s.name)	
+				}else if(e.kind=='source'){
+					sources.add(s.name)						
+				}else{
+					sinks.add(s.name)	
+					sources.add(s.name)						
+				}			
+			}			
+		}
+		
+		
+	
+	
+		var quoSinks   = sinks.map[x| '''"«x»"''']
+		var quoSources = sources.map[x| '''"«x»"''']
+		
+		val sinkList = quoSinks.join(",")
+		val sourceList = quoSources.join(",")
+	
+		acceptor.accept(levels.toClass("org.evidently.labels.PolicyLabelSet")) [
+	
+	
+	
+			members += levels.toMethod('''sinks''', typeRef(String).addArrayTypeDimension()) [
+						documentation = '''Policy defined sinks'''
+						body = '''
+							return new String[] { «sinkList» };
+						'''
+					]
+	
+			members += levels.toMethod('''sources''', typeRef(String).addArrayTypeDimension()) [
+						documentation = '''Policy defined sinks'''
+						body = '''
+							return new String[] { «sourceList» };
+						'''
+					]
+	
+	
+			superTypes += typeRef("org.evidently.labels.defaults.LabelSet")
+			
+		]
+	
 	}
 
 	def dispatch void infer(Policy policy, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
