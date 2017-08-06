@@ -37,6 +37,19 @@ import org.evidently.evidently.Levels
 import org.evidently.evidently.LevElem
 import org.evidently.evidently.LevelBodyElem
 import org.eclipse.xtext.common.types.JvmType
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtext.common.types.JvmAnnotationReference
+import org.eclipse.xtext.common.types.JvmStringAnnotationValue
+import org.eclipse.xtext.common.types.JvmOperation
+import org.eclipse.xtext.common.types.JvmBooleanAnnotationValue
+import org.eclipse.xtext.util.internal.Nullable
+import org.eclipse.xtext.common.types.TypesFactory
+import org.eclipse.xtext.common.types.util.TypeReferences
+import org.evidently.evidently.Property
+import org.evidently.evidently.Requires
+import org.evidently.evidently.Ensures
+import org.eclipse.emf.common.util.EList
+import org.eclipse.emf.common.util.ECollections
 
 /**
  * <p>Infers a JVM model from the source model.</p> 
@@ -139,22 +152,30 @@ class EvidentlyJvmModelInferrer extends AbstractModelInferrer {
 //		System.out.println("FILE - ELEM")
 //
 //	}
-
 	int flowpointIndex;
+	int propertyIndex;
 
 	def getNextFlowpointName() {
 		val name = String.format("Flowpoint$%d", flowpointIndex)
-		flowpointIndex = ( flowpointIndex + 1 ) 
+		flowpointIndex = ( flowpointIndex + 1 )
 		return name
 	}
 
-	def evExpToJavaExpression(EvExp expression){
-		
+	def getNextPropertyName() {
+		val name = String.format("Property$%d", propertyIndex)
+		propertyIndex = ( propertyIndex + 1 )
+		return name
+	}
+
+	def analyzeFlowpointAndPropertyDeps() {
+	}
+
+	def evExpToJavaExpression(EvExp expression) {
+
 		var node = NodeModelUtils.getNode(expression)
 
 		var base = NodeModelUtils.getTokenText(node)
-		
-		
+
 		base = base.replaceAll("(within)\\((.*?)\\)", "$1(\"$2\")");
 		base = base.replaceAll("(execution)\\((.*?)\\)", "$1(\"$2\")");
 		base = base.replaceAll("(resultof)\\((.*?)\\)", "$1(\"$2\")");
@@ -163,13 +184,12 @@ class EvidentlyJvmModelInferrer extends AbstractModelInferrer {
 		base = base.replaceAll("(named)\\((.*?)\\)", "$1(\"$2\")");
 		base = base.replaceAll("(field)\\((.*?)\\)", "$1(\"$2\")");
 		base = base.replaceAll("(typeof)\\((.*?)\\)", "$1(\"$2\")");
-		
+
 		return base
-		
+
 	}
 
 	def dispatch void infer(Flowpoints flowpoint, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
-
 
 		val modelName = (flowpoint.eContainer as Model).name
 		val flowpointName = flowpoint.name
@@ -178,115 +198,240 @@ class EvidentlyJvmModelInferrer extends AbstractModelInferrer {
 
 		// this is what we are going to transform
 		val expression = flowpoint.body as EvExp
-		
-		System.out.println('''Generating Flowpoint: «fqFlowpointName» in class org.evidently.flowpoints.«className»...''')
-		
-		
+
+		System.out.
+			println('''Generating Flowpoint: «fqFlowpointName» in class org.evidently.flowpoints.«className»...''')
+
 		acceptor.accept(flowpoint.toClass("org.evidently.flowpoints." + className)) [
-		
-			members += flowpoint.toConstructor[
-						parameters += flowpoint.toParameter("scope", typeRef(String))
-						parameters += flowpoint.toParameter("type", typeRef(String))
-						parameters += flowpoint.toParameter("currentClass", typeRef(String))
-						parameters += flowpoint.toParameter("currentMethod", typeRef(String))
-						parameters += flowpoint.toParameter("name", typeRef(String))
-						parameters += flowpoint.toParameter("astType", typeRef("org.evidently.agent.ASTType"))
-						parameters += flowpoint.toParameter("lastMethodCall", typeRef("org.evidently.agent.MethodCall"))
-		
-						body = '''
-							super(scope, type, currentClass, currentMethod, name, astType, lastMethodCall);
-						'''
-				
+
+			members += flowpoint.toConstructor [
+				parameters += flowpoint.toParameter("scope", typeRef(String))
+				parameters += flowpoint.toParameter("type", typeRef(String))
+				parameters += flowpoint.toParameter("currentClass", typeRef(String))
+				parameters += flowpoint.toParameter("currentMethod", typeRef(String))
+				parameters += flowpoint.toParameter("name", typeRef(String))
+				parameters += flowpoint.toParameter("astType", typeRef("org.evidently.agent.ASTType"))
+				parameters += flowpoint.toParameter("lastMethodCall", typeRef("org.evidently.agent.MethodCall"))
+
+				body = '''
+					super(scope, type, currentClass, currentMethod, name, astType, lastMethodCall);
+				'''
+
 			]
-				
-			
-		
+
 			members += flowpoint.toMethod('''getName''', typeRef(String)) [
-						documentation = '''Flowpoint name method for«fqFlowpointName» '''
-						body = '''
-							return "«fqFlowpointName»";					
-						'''					
-					]
-					
-			
+				documentation = '''Flowpoint name method for«fqFlowpointName» '''
+				body = '''
+					return "«fqFlowpointName»";					
+				'''
+			]
+
 			members += flowpoint.toMethod('''getFlowpointFor''', typeRef(String)) [
-						documentation = '''Flowpoint identification method for«fqFlowpointName» '''				
-						body = '''
+				documentation = '''Flowpoint identification method for«fqFlowpointName» '''
+				body = '''
+					
+						System.out.println(String.format("[Evidently] [GENERATED] Calling Flowpoint (%s) with %s,%s,%s,%s,%s,%s", getName(), scope, type, currentClass, currentMethod, name, astType.toString()));
 						
-							System.out.println(String.format("[Evidently] [GENERATED] Calling Flowpoint (%s) with %s,%s,%s,%s,%s,%s", getName(), scope, type, currentClass, currentMethod, name, astType.toString()));
-							
+					
+						boolean yes = «evExpToJavaExpression(expression)»;
 						
-							boolean yes = «evExpToJavaExpression(expression)»;
-							
-							
-							if(yes){
-								return getName();
-							}
-							
-							return null;
-												
-						'''					
-					]
-					
-					
-					
+						
+						if(yes){
+							return getName();
+						}
+						
+						return null;
+											
+				'''
+			]
+
 			superTypes += typeRef("org.evidently.agent.Flowpoint")
-			
+
 		]
-		
 
 	}
-	
+
+	// we are going to generate properties
+	// from models
+	def dispatch void infer(Property prop, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
+
+		var Model model = prop.eContainer as Model
+
+		// first, figure out all the things that are VISIBLE to properties 
+		val flowpointNames = newHashSet()
+		val propertyNames = newHashSet()
+
+		var contextVariables = newArrayList()
+
+		for (MBElem e : model.elements) {
+			if (e instanceof UseElem) {
+				// import everything 
+				var UseElem theUse = e as UseElem
+
+				var Model modelToImport = theUse.model
+
+				// grab all the properties and flowpoints
+				for (MBElem mElem : modelToImport.elements) {
+					if (mElem instanceof Flowpoints) {
+						var Flowpoints fp = mElem as Flowpoints
+						contextVariables += fromJavaName(toJavaName(fp)) -> fp.type
+						flowpointNames += fromJavaName(toJavaName(fp))
+					}
+
+					if (mElem instanceof org.evidently.evidently.Property) {
+						var org.evidently.evidently.Property p = mElem as org.evidently.evidently.Property
+						contextVariables += fromJavaName(toJavaName(p)) -> prop.type
+						propertyNames += fromJavaName(toJavaName(p))
+					}
+				}
+			} else if (e instanceof Property) {
+				var org.evidently.evidently.Property p = e as org.evidently.evidently.Property
+				contextVariables += fromJavaName(toJavaName(p)) -> prop.type
+				propertyNames += fromJavaName(toJavaName(p))
+
+			} else if (e instanceof Flowpoints) {
+				var Flowpoints fp = e as Flowpoints
+				contextVariables += fromJavaName(toJavaName(fp)) -> fp.type
+				flowpointNames += fromJavaName(toJavaName(fp))
+
+			}
+		}
+		// NOTE: type checking promises us that flowpointNames is disjoint from propertyNames
+		val context = contextVariables
+		val e = prop
+		var propertyJavaType = "";
+		if (prop.type.javaType === null) {
+			propertyJavaType = prop.type.type
+		} else {
+			propertyJavaType = prop.type.javaType.toString()
+		}
+
+		val propertyType = propertyJavaType
+
+		// new class for each property
+		acceptor.accept(e.toClass('''org.evidently.properties.«getNextPropertyName()»''')) [
+			// extends Property
+			superTypes += typeRef("org.evidently.agent.Property")
+
+			// name function
+			members += e.toMethod('''getName''', typeRef(String)) [
+				documentation = '''getName() method for property «fromJavaName(toJavaName(prop))»'''
+				body = '''
+					return " «fromJavaName(toJavaName(prop))»";					
+				'''
+			]
+			// valuation function
+			//
+			val propertyDefinition = prop.expression
+
+			// org.evidently.monitor.UnsatSpecException
+			//
+			val valueFunction = e.toMethod('''getValue''', typeRef("org.evidently.monitor.Pair")) [
+				documentation = '''Valueation function for property «fromJavaName(toJavaName(prop))»'''
+				body = '''
+						//the precondition
+						«generatePrecondition(context, prop)»
+					
+						// define the return value
+						org.evidently.monitor.Pair<edu.columbia.cs.psl.phosphor.runtime.Taint,Object> p = new org.evidently.monitor.Pair<edu.columbia.cs.psl.phosphor.runtime.Taint,Object>();
+						 		
+						// calculate the value
+						«propertyType» result = «expressionToBody(context, propertyDefinition)»;
+						
+						edu.columbia.cs.psl.phosphor.runtime.Taint t = edu.columbia.cs.psl.phosphor.runtime.MultiTainter.getTaint(result);
+						
+						p.setLeft(t);
+						p.setRight(result);			
+						
+						// the postcondition
+						«generatePostcondition(context, prop)»
+						
+						{
+							// check the specification
+							if(!__JML_pre || __JML_post){
+								return p;
+							}
+						}
+						 					
+						throw new org.evidently.monitor.UnsatSpecException(String.format("__JML_pre=%s,__JML_post=%s", __JML_pre, __JML_post));
+				'''
+			]
+
+			System.out.println("Creating parameters")
+			for (var int i = 0; i < context.size(); i++) {
+				val Pair<String, ProgType> p = context.get(i)
+
+				val name = p.getKey()
+				System.out.println("Creating parameters: " + name)
+				System.out.println("Current Property Name: " + fromJavaName(toJavaName(prop)))
+				// properties can't be recursive. 						
+				if (name.equals(fromJavaName(toJavaName(prop))) == false) {
+
+					System.out.println("Adding Parameter...")
+					if (p.getValue().javaType === null) {
+						valueFunction.parameters += e.toParameter('''arg«i»''', typeRef(p.getValue().type))
+					} else {
+						valueFunction.parameters += e.toParameter('''arg«i»''', typeRef(p.getValue().javaType))
+					}
+
+					if (flowpointNames.contains(name)) {
+						valueFunction.parameters.last.annotations +=
+							e.toAnnotationExtended("org.evidently.annotations.ReleaseParam", p.getKey(), true)
+					} else {
+						valueFunction.parameters.last.annotations +=
+							e.toAnnotationExtended("org.evidently.annotations.ReleaseParam", p.getKey(), false)
+					}
+
+				}
+			}
+			members += valueFunction
+		]
+	}
+
 	def dispatch void infer(Levels levels, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
-	
+
 		var sinks = newHashSet()
 		var sources = newHashSet()
-				
-		for(LevElem e : levels.elements){			
-			for(LevelBodyElem s : e.elements.elements){
-				if(e.kind=='sink'){
-					sinks.add(s.name)	
-				}else if(e.kind=='source'){
-					sources.add(s.name)						
-				}else{
-					sinks.add(s.name)	
-					sources.add(s.name)						
-				}			
-			}			
+
+		for (LevElem e : levels.elements) {
+			for (LevelBodyElem s : e.elements.elements) {
+				if (e.kind == 'sink') {
+					sinks.add(s.name)
+				} else if (e.kind == 'source') {
+					sources.add(s.name)
+				} else {
+					sinks.add(s.name)
+					sources.add(s.name)
+				}
+			}
 		}
-		
-		
-	
-	
-		var quoSinks   = sinks.map[x| '''"«x»"''']
-		var quoSources = sources.map[x| '''"«x»"''']
-		
+
+		var quoSinks = sinks.map[x|'''"«x»"''']
+		var quoSources = sources.map[x|'''"«x»"''']
+
 		val sinkList = quoSinks.join(",")
 		val sourceList = quoSources.join(",")
-	
+
 		acceptor.accept(levels.toClass("org.evidently.labels.PolicyLabelSet")) [
-	
-	
-	
+
 			members += levels.toMethod('''sinks''', typeRef(String).addArrayTypeDimension()) [
-						documentation = '''Policy defined sinks'''
-						body = '''
-							return new String[] { «sinkList» };
-						'''
-					]
-	
+				documentation = '''Policy defined sinks'''
+				body = '''
+					return new String[] { «sinkList» };
+				'''
+			]
+
 			members += levels.toMethod('''sources''', typeRef(String).addArrayTypeDimension()) [
-						documentation = '''Policy defined sinks'''
-						body = '''
-							return new String[] { «sourceList» };
-						'''
-					]
-	
-	
+				documentation = '''Policy defined sinks'''
+				body = '''
+					return new String[] { «sourceList» };
+				'''
+			]
+
 			superTypes += typeRef("org.evidently.labels.defaults.LabelSet")
-			
+
 		]
-	
+
 	}
 
 	def dispatch void infer(Policy policy, IJvmDeclaredTypeAcceptor acceptor, boolean isPreIndexingPhase) {
@@ -432,11 +577,11 @@ class EvidentlyJvmModelInferrer extends AbstractModelInferrer {
 						}
 
 						mBase.parameters.last.annotations +=
-							e.toAnnotation("org.evidently.annotations.ReleaseParam", p.getKey())
+							e.toAnnotationExtended("org.evidently.annotations.ReleaseParam", p.getKey(), true)
 						mWhen.parameters.last.annotations +=
-							e.toAnnotation("org.evidently.annotations.ReleaseParam", p.getKey())
+							e.toAnnotationExtended("org.evidently.annotations.ReleaseParam", p.getKey(), true)
 						mUnless.parameters.last.annotations +=
-							e.toAnnotation("org.evidently.annotations.ReleaseParam", p.getKey())
+							e.toAnnotationExtended("org.evidently.annotations.ReleaseParam", p.getKey(), true)
 					}
 
 					members += mBase
@@ -448,16 +593,23 @@ class EvidentlyJvmModelInferrer extends AbstractModelInferrer {
 			}
 		]
 
-//		acceptor.accept(policy.toClass("org.evidently.policy." + policy.name)) 
-//		
-//		[
-// 				members += policy.toMethod("hello" + "dude", typeRef(String)) [
-// 					body = '''
-//						return "Hello «greeting.name»";
-//					'''
-//				]
-//			
-//		]
+	}
+
+	def expressionToBody(ArrayList<Pair<String, ProgType>> pairs, XExpression expression) {
+
+		val XExpression e = expression
+
+		var node = NodeModelUtils.getNode(e)
+
+		var txt = NodeModelUtils.getTokenText(node)
+
+		// this is bad but quick
+		for (var i = 0; i < pairs.size(); i++) {
+			var Pair<String, ProgType> p = pairs.get(i)
+			txt = txt.replaceAll(p.getKey(), "arg" + i)
+		}
+
+		return txt;
 	}
 
 	// NOTE -- multiple WHEN clauses create a disjunction 
@@ -467,18 +619,7 @@ class EvidentlyJvmModelInferrer extends AbstractModelInferrer {
 		var List<String> buffer = new ArrayList<String>();
 
 		for (XExpression  e : expressions) {
-
-			var node = NodeModelUtils.getNode(e)
-
-			var txt = NodeModelUtils.getTokenText(node)
-
-			// this is bad but quick
-			for (var i = 0; i < pairs.size(); i++) {
-				var Pair<String, ProgType> p = pairs.get(i)
-				txt = txt.replaceAll(p.getKey(), "arg" + i)
-			}
-
-			buffer.add(txt);
+			buffer.add(expressionToBody(pairs, e))
 		}
 
 		return String.join("||", buffer);
@@ -492,6 +633,131 @@ class EvidentlyJvmModelInferrer extends AbstractModelInferrer {
 			args.add('''arg«i»''')
 		}
 		return String.join(", ", args)
+	}
+
+	def generatePostcondition(ArrayList<Pair<String, ProgType>> pairs, Property property) {
+
+		if (property.spec === null || property.spec.ensures === null || property.spec.ensures.size() === 0) {
+			return '''
+				boolean __JML_post = false;
+				{
+					
+					// postcondition
+					__JML_post = true;
+					
+				}
+			'''
+		}
+
+		// the postcondition also can work with the meta variable \result (bound to the 
+		// local variable "result"
+		var List<String> buffer = new ArrayList<String>();
+
+		for (Ensures e : property.spec.ensures) {
+			buffer.add(expressionToBody(pairs, e.expression))
+		}
+
+		val String pc = String.join("&&", buffer).replaceAll("\\\\result", "result");
+
+		return '''
+			boolean __JML_post = false;
+			{
+				
+				// postcondition
+				__JML_post = «pc»;
+				
+			}				
+		'''
+	}
+
+	def generatePrecondition(ArrayList<Pair<String, ProgType>> pairs, Property property) {
+
+		if (property.spec === null || property.spec.requires === null || property.spec.requires.size() == 0) {
+			return '''
+				boolean __JML_pre = false;
+				{
+					
+					// precondition
+					__JML_pre = true;
+					
+				}
+			'''
+		}
+		var List<String> buffer = new ArrayList<String>();
+
+		for (Requires  r : property.spec.requires) {
+			buffer.add(expressionToBody(pairs, r.expression))
+		}
+
+		val String pc = String.join("&&", buffer);
+
+		return '''
+			boolean __JML_pre = false;
+			{
+				
+				// precondition
+				__JML_pre = «pc»;
+				
+			}
+			
+			
+		'''
+
+	}
+
+	@Inject
+	private TypeReferences references;
+
+	@Inject
+	private TypesFactory typesFactory;
+
+	def JvmAnnotationReference toAnnotationExtended(EObject sourceElement, @Nullable String annotationTypeName,
+		String name, boolean isFlowpoint) {
+
+		var JvmAnnotationReference result = typesFactory.createJvmAnnotationReference();
+		var JvmType jvmType = references.findDeclaredType(annotationTypeName, sourceElement);
+		if (jvmType == null) {
+			throw new IllegalArgumentException("The type " + annotationTypeName + " is not on the classpath.");
+		}
+		if (!(jvmType instanceof JvmAnnotationType)) {
+			throw new IllegalArgumentException("The given class " + annotationTypeName + " is not an annotation type.");
+		}
+
+		var JvmAnnotationType annotationType = jvmType as JvmAnnotationType;
+		result.setAnnotation(annotationType);
+
+		{
+			var JvmStringAnnotationValue annotationValue = typesFactory.createJvmStringAnnotationValue();
+			annotationValue.getValues().add(name);
+			var JvmOperation operation = getJvmOperation(annotationType, "value");
+			if (operation !== null) {
+				annotationValue.setOperation(operation);
+			}
+			result.explicitValues.add(annotationValue)
+		}
+
+		{
+			var JvmBooleanAnnotationValue annotationValue = typesFactory.createJvmBooleanAnnotationValue();
+
+			annotationValue.getValues().add(isFlowpoint);
+
+			var JvmOperation operation = getJvmOperation(annotationType, "isFlowpoint");
+			if (operation !== null) {
+				annotationValue.setOperation(operation);
+			}
+			result.explicitValues.add(annotationValue)
+		}
+
+		return result;
+	}
+
+	def JvmOperation getJvmOperation(JvmAnnotationType type, String name) {
+		for (JvmOperation op : type.getDeclaredOperations()) {
+			if (op.getSimpleName().equals(name)) {
+				return op;
+			}
+		}
+		return null;
 	}
 
 }
