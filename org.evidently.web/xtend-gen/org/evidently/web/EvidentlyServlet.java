@@ -3,12 +3,9 @@
  */
 package org.evidently.web;
 
-import com.google.inject.Injector;
 import javax.servlet.annotation.WebServlet;
 import org.eclipse.xtext.util.DisposableRegistry;
 import org.eclipse.xtext.web.servlet.XtextServlet;
-import org.eclipse.xtext.xbase.lib.Exceptions;
-import org.evidently.web.EvidentlyWebSetup;
 
 /**
  * Deploy this class into a servlet container to enable DSL-specific services.
@@ -20,13 +17,9 @@ public class EvidentlyServlet extends XtextServlet {
   
   @Override
   public void init() {
-    try {
-      super.init();
-      final Injector injector = new EvidentlyWebSetup().createInjectorAndDoEMFRegistration();
-      this.disposableRegistry = injector.<DisposableRegistry>getInstance(DisposableRegistry.class);
-    } catch (Throwable _e) {
-      throw Exceptions.sneakyThrow(_e);
-    }
+    throw new Error("Unresolved compilation problems:"
+      + "\nThe method createInjectorAndDoEMFRegistration() is undefined for the type EvidentlyWebSetup"
+      + "\ngetInstance cannot be resolved");
   }
   
   @Override

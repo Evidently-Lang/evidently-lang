@@ -3,24 +3,17 @@
  */
 package org.evidently.web;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.eclipse.xtext.util.Modules2;
-import org.evidently.EvidentlyRuntimeModule;
-import org.evidently.EvidentlyStandaloneSetup;
-import org.evidently.ide.EvidentlyIdeModule;
-import org.evidently.web.EvidentlyWebModule;
 
 /**
  * Initialization support for running Xtext languages in web applications.
  */
 @SuppressWarnings("all")
-public class EvidentlyWebSetup extends EvidentlyStandaloneSetup {
+public class EvidentlyWebSetup /* implements EvidentlyStandaloneSetup  */{
   @Override
   public Injector createInjector() {
-    EvidentlyRuntimeModule _evidentlyRuntimeModule = new EvidentlyRuntimeModule();
-    EvidentlyIdeModule _evidentlyIdeModule = new EvidentlyIdeModule();
-    EvidentlyWebModule _evidentlyWebModule = new EvidentlyWebModule();
-    return Guice.createInjector(Modules2.mixin(_evidentlyRuntimeModule, _evidentlyIdeModule, _evidentlyWebModule));
+    throw new Error("Unresolved compilation problems:"
+      + "\nEvidentlyRuntimeModule cannot be resolved."
+      + "\nEvidentlyIdeModule cannot be resolved.");
   }
 }
