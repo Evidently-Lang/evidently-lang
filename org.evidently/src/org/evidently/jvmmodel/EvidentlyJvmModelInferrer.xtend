@@ -311,7 +311,7 @@ class EvidentlyJvmModelInferrer extends AbstractModelInferrer {
 		// new class for each property
 		acceptor.accept(e.toClass('''org.evidently.properties.«getNextPropertyName()»''')) [
 			// extends Property
-			superTypes += typeRef("org.evidently.agent.Property")
+			superTypes += typeRef("org.evidently.policy.Property")
 
 			// name function
 			members += e.toMethod('''getName''', typeRef(String)) [
@@ -478,6 +478,9 @@ class EvidentlyJvmModelInferrer extends AbstractModelInferrer {
 		val context = contextVariables
 
 		acceptor.accept(policy.toClass("org.evidently.policy." + policy.name)) [
+			
+			annotations += policy.toAnnotation("org.evidently.annotations.Policy", policy.name)
+			
 
 			// add all the context variables
 			for (PoBElem e : policy.elements) {
